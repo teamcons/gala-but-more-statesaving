@@ -32,6 +32,8 @@ public class Gala.WindowStateSaver : GLib.Object {
                 last_y       INTEGER,
                 last_width   INTEGER,
                 last_height  INTEGER,
+                //always_on_top BOOLEAN,        //TODO
+                //on_all_workspaces BOOLEAN,        //TODO
                 PRIMARY KEY (app_id, window_index)
             );
             """,
@@ -50,7 +52,7 @@ public class Gala.WindowStateSaver : GLib.Object {
                 return;
             }
         }
-
+        // TODO: ADD LOGIC FOR ALTER TABLE ADD IF NOT EXISTS COLUMN always_on_top on_all_workspaces
         critical ("Cannot create table 'apps': %d, %s", rc, db.errmsg ());
     }
 
@@ -98,8 +100,8 @@ public class Gala.WindowStateSaver : GLib.Object {
 
         Sqlite.Statement stmt;
         var rc = db.prepare_v2 (
-            "INSERT INTO apps (app_id, window_index, last_x, last_y, last_width, last_height) VALUES ('%s', '%d', '%d', '%d', '%d', '%d');"
-            .printf (app_id, window_index, frame_rect.x, frame_rect.y, frame_rect.width, frame_rect.height),
+            "INSERT INTO apps (app_id, window_index, last_x, last_y, last_width, last_height, always_on_top, on_all_workspaces) VALUES ('%s', '%d', '%d', '%d', '%d', '%d', '%b', '%b');"
+            .printf (app_id, window_index, frame_rect.x, frame_rect.y, frame_rect.width, frame_rect.height, window.always_on_top, window.on_all_workspaces),
             -1, out stmt
         );
 
@@ -130,8 +132,8 @@ public class Gala.WindowStateSaver : GLib.Object {
 
         Sqlite.Statement stmt;
         var rc = db.prepare_v2 (
-            "UPDATE apps SET last_x = '%d', last_y = '%d', last_width = '%d', last_height = '%d' WHERE app_id = '%s' AND window_index = '%d';"
-            .printf (frame_rect.x, frame_rect.y, frame_rect.width, frame_rect.height, app_id, window_index),
+            "UPDATE apps SET last_x = '%d', last_y = '%d', last_width = '%d', last_height = '%d', always_on_top = '%b', on_all_workspaces = '%b' WHERE app_id = '%s' AND window_index = '%d';"
+            .printf (frame_rect.x, frame_rect.y, frame_rect.width, frame_rect.height, window.always_on_top, window.on_all_workspaces app_id, window_index),
             -1, out stmt
         );
 
